@@ -1,0 +1,38 @@
+FROM apache/airflow:2.10.2-python3.11
+
+USER root
+
+# System deps for LightFM, NumPy, SciPy, Spark (needs Java)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    gcc \
+    g++ \
+    gfortran \
+    libopenblas-dev \
+    liblapack-dev \
+    openjdk-17-jdk-headless \
+    procps \
+    git \
+ && rm -rf /var/lib/apt/lists/*
+
+# Set JAVA_HOME so PySpark can find Java
+ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk-arm64
+ENV PATH="${JAVA_HOME}/bin:${PATH}"
+
+USER airflow
+
+# Upgrade pip and install Python dependencies
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir \
+        numpy==1.26.4 \
+        scipy==1.13.1 \
+        pandas==2.1.4 \
+        cython && \
+    pip install --no-cache-dir \
+        psycopg2-binary==2.9.9 \
+        kafka-python==2.0.2 \
+        requests==2.32.3 \
+        mlflow==2.16.2 \
+        pyspark==3.5.1 \
+        delta-spark==3.2.0 \
+        git+https://github.com/lyst/lightfm.git
